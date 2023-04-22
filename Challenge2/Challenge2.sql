@@ -13,6 +13,8 @@ where EXTRACT(YEAR FROM TO_TIMESTAMP(he.datetime, 'YYYY-MM-DD"T"HH24:MI:SS"Z"'))
 group by d.department, j.job
 order by d.department,j.job asc ;
 
+-- Tableau Graph for Query 1: https://us-west-2b.online.tableau.com/t/johnnyrm94/views/globant/Query1
+
 --Query 2
 
 with amount_hired as (
@@ -33,3 +35,4 @@ inner join avg_hired av on am.amount > av.average
 inner join departments d  on am.department_id = d.id
 order by am.amount desc;
 
+-- Tableau Graph for Query 2: https://us-west-2b.online.tableau.com/t/johnnyrm94/views/globant/Query2
