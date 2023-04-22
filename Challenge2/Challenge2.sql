@@ -14,3 +14,4 @@ group by d.department, j.job
 order by d.department,j.job asc ;
 
 --Query 2
+
