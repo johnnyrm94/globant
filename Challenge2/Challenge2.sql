@@ -27,7 +27,7 @@ avg_hired as (
 	from amount_hired
 )
 
-select am.amount, am.department_id, d.department
+select am.department_id id, d.department, am.amount hired
 from amount_hired am 
 inner join avg_hired av on am.amount > av.average
 inner join departments d  on am.department_id = d.id
