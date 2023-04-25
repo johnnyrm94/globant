@@ -3,7 +3,6 @@ import avro.schema
 from avro.datafile import DataFileReader
 from avro.io import DatumReader
 
-# Definir la información de la conexión a la base de datos
 conn_info = {
     "host": "globantdb.c1fhwpqnf58i.us-east-1.rds.amazonaws.com",
     "database": "globantdb",
@@ -14,13 +13,13 @@ conn_info = {
 conn = psycopg2.connect(**conn_info)
 cur = conn.cursor()
 
-# Comprobar si la tabla "departments" está vacía
+# Check table
 cur.execute("SELECT COUNT(*) FROM departments")
 if cur.fetchone()[0] != 0:
     raise Exception("Departments table is not empty")
 else:
 
-    # Leer el archivo AVRO y almacenar los datos en una lista
+    # Restore table
     departments_data = []
     with open("departments.avro", "rb") as f:
         reader = DataFileReader(f, DatumReader())

@@ -4,7 +4,8 @@ from avro.datafile import DataFileReader, DataFileWriter
 from avro.io import DatumReader, DatumWriter
 from datetime import datetime
 
-# Definir la información de la conexión a la base de datos
+
+
 conn_info = {
     "host": "globantdb.c1fhwpqnf58i.us-east-1.rds.amazonaws.com",
     "database": "globantdb",
@@ -13,18 +14,17 @@ conn_info = {
     "port": "5432"
 }
 
-# Definir el esquema AVRO para cada tabla
+# Schemas
 departments_schema = avro.schema.parse(open("departments-schema.avsc", "rb").read())
 
 jobs_schema = avro.schema.parse(open("jobs-schema.avsc", "rb").read())
 
-hired_employees_schema = avro.schema.parse(open("hired_employees-schema.avsc", "rb").read())
+hired_employees_schema = avro.schema.parse(open("hired_employees_schema.avsc", "rb").read())
 
-# Conectar a la base de datos y crear el cursor
 conn = psycopg2.connect(**conn_info)
 cur = conn.cursor()
 
-# Hacer una copia de seguridad de cada tabla y guardarla en un archivo AVRO
+# Main method
 with open("departments.avro", "wb") as f:
     writer = DataFileWriter(f, DatumWriter(), departments_schema)
     cur.execute("SELECT * FROM departments")
@@ -43,14 +43,19 @@ with open("hired_employees.avro", "wb") as f:
     writer = DataFileWriter(f, DatumWriter(), hired_employees_schema)
     cur.execute("SELECT * FROM hired_employees")
     for row in cur.fetchall():
-        writer.append({"id": row[0], "name": row[1], "datetime": datetime.strftime(row[2], '%Y-%m-%d %H:%M:%S'), "department_id": row[3], "job_id": row[4]})
+        
+        name = row[1] if row[1] is not None else "no name" # Reemplazar los valores nulos con -1
+        dt = row[2] if row[2] is not None else "no datetime" # Reemplazar los valores nulos con -1
+        department_id = row[3] if row[3] is not None else -1  # Reemplazar los valores nulos con -1
+        job_id = row[4] if row[4] is not None else -1  # Reemplazar los valores nulos con -1
+        writer.append({"id": row[0], "name": name, "datetime": dt, "department_id": department_id, "job_id": job_id})
     writer.close()
 
-# Cerrar el cursor y la conexión
+
 cur.close()
 conn.close()
 
-# Leer los archivos AVRO generados
+# Read AVRO
 with open("departments.avro", "rb") as f:
     reader = DataFileReader(f, DatumReader())
     for row in reader:
