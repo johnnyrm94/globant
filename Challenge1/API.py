@@ -44,20 +44,19 @@ class HiredEmployees(db.Model):
             'id': self.id,
             'name': self.name,
             'datetime': datetime.datetime.strptime(self.datetime, '%Y-%m-%dT%H:%M:%SZ').isoformat() if self.datetime else None,
-            'department_id': self.department_id,#.to_dict() if self.department else None,
-            'job_id': self.job_id#.to_dict() if self.job else None
+            'department_id': self.department_id,
+            'job_id': self.job_id
         }
 
 
-@app.route('/employees', methods=['POST'])
+@app.route('/employees', methods=['POST']) #Insert employees
 def create_employees():
     data = request.json
     employees = data.get('employees')
 
     if not employees:
         return jsonify({'error': 'No employees provided'}), 400
-
-    # Make sure all data is valid before making any changes to the database
+    
     for employee in employees:
         name = employee.get('name')
         datetime_str = employee.get('datetime')
