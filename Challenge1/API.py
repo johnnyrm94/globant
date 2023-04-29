@@ -64,19 +64,16 @@ def create_employees():
         job_id = employee.get('job_id')
         table_name = employee.get('table')
 
+
         if not all([name, datetime_str, department_id, job_id, table_name]):
             return jsonify({'error': 'Missing data for employee'}), 400
 
         try:
-            datetime_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M:%SZ')
+            datetime_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M:%SZ').isoformat()
         except ValueError as e:
             return jsonify({'error': 'Invalid datetime format. Expected format is YYYY-MM-DDTHH:MM:SSZ.'}), 400
 
-        if table_name == 'Departments':
-            table = Departments
-        elif table_name == 'Jobs':
-            table = Jobs
-        elif table_name == 'HiredEmployees':
+        if table_name == 'HiredEmployees':
             table = HiredEmployees
         else:
             return jsonify({'error': f'Invalid table name: {table_name}'}), 400
@@ -90,26 +87,120 @@ def create_employees():
     db.session.commit()
     return jsonify({'success': True}), 201
 
+@app.route('/departments', methods=['POST']) #Insert departments
+def create_departments():
+    data = request.json
+    departments = data.get('departments')
+
+    if not departments:
+        return jsonify({'error': 'No departments provided'}), 400
+    
+    for department in departments:
+        id = department.get('id')
+        department = department.get('department')
+        table_name = department.get('table')
+
+        if not all([id, department]):
+            return jsonify({'error': 'Missing data for department'}), 400
+
+        if table_name == 'Departments':
+            table = Departments
+
+        else:
+            return jsonify({'error': f'Invalid table name: {table_name}'}), 400
+        
+
+        department = table(id=id, department=department)
+        db.session.add(department)
+
+    db.session.commit()
+    return jsonify({'success': True}), 201
+
+@app.route('/jobs', methods=['POST']) #Insert jobs
+def create_jobs():
+    data = request.json
+    jobs = data.get('jobs')
+
+    if not jobs:
+        return jsonify({'error': 'No jobs provided'}), 400
+    
+    for job in jobs:
+        id = job.get('id')
+        job = job.get('job')
+        table_name = job.get('table')
+
+        if not all([id, job]):
+            return jsonify({'error': 'Missing data for job'}), 400
+
+        
+        if table_name == 'Jobs':
+            table = Jobs
+
+        else:
+            return jsonify({'error': f'Invalid table name: {table_name}'}), 400
+
+        job = table(id=id, job=job)
+        db.session.add(job)
+
+    db.session.commit()
+    return jsonify({'success': True}), 201
+
+
 @app.route('/employees', methods=['GET'])
 def get_employees():
     table_name = request.args.get('table')
     if table_name:
-        if table_name == 'Departments':
-            employees = Departments.query.all()
-        elif table_name == 'Jobs':
-            employees = Jobs.query.all()
-        elif table_name == 'HiredEmployees':
+        if table_name == 'HiredEmployees':
             employees = HiredEmployees.query.all()
         else:
             return jsonify({'error': f'Invalid table name: {table_name}'}), 400
     else:
         employees = []
-        for table in [Departments, Jobs, HiredEmployees]:
+        for table in [HiredEmployees]:
             employees += table.query.all()
 
     return jsonify([employee.to_dict() for employee in employees])
+
+
+
+@app.route('/departments', methods=['GET'])
+def get_departments():
+    table_name = request.args.get('table')
+    if table_name:
+        if table_name == 'Departments':
+            departments = Departments.query.all()
+        else:
+            return jsonify({'error': f'Invalid table name: {table_name}'}), 400
+    else:
+        departments = []
+        for table in [Departments]:
+            departments += table.query.all()
+
+    return jsonify([department.to_dict() for department in departments])
+
+@app.route('/jobs', methods=['GET'])
+def get_jobs():
+    table_name = request.args.get('table')
+    if table_name:
+        if table_name == 'Jobs':
+            jobs = Jobs.query.all()
+        else:
+            return jsonify({'error': f'Invalid table name: {table_name}'}), 400
+    else:
+        jobs = []
+        for table in [ Jobs]:
+            jobs += table.query.all()
+
+    return jsonify([job.to_dict() for job in jobs])
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+
+
+#PENDING: 
+# ADD ISO FORMAT TO GET EMPLOYEEES
+# ADD VALIDATION LIKE NOT INSERT MORE THAN 100 AND OTHER RULES. 
+# DOCKER 
+# PUT DOCKER ON CLOUD 
