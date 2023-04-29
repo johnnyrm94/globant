@@ -11,9 +11,8 @@ os.environ['AWS_ACCESS_KEY_ID'] = 'AKIARZMM3I65JS3OPKD5'
 os.environ['AWS_SECRET_ACCESS_KEY'] = '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'
 engine = create_engine('postgresql://postgres:Nasus1994.@globantdb.c1fhwpqnf58i.us-east-1.rds.amazonaws.com:5432/globantdb')
 
-
+#Bucket
 s3 = boto3.client('s3')
-
 bucket_name = 'globantdb-backup'
 departments= 'source/departments.csv'
 jobs = 'source/jobs.csv'

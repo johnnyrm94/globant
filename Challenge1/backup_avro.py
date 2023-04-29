@@ -3,9 +3,11 @@ import avro.schema
 from avro.datafile import DataFileReader, DataFileWriter
 from avro.io import DatumReader, DatumWriter
 from datetime import datetime
+import os 
+import boto3
 
 
-
+#Credentials
 conn_info = {
     "host": "globantdb.c1fhwpqnf58i.us-east-1.rds.amazonaws.com",
     "database": "globantdb",
@@ -14,12 +16,26 @@ conn_info = {
     "port": "5432"
 }
 
+os.environ['AWS_ACCESS_KEY_ID'] = 'AKIARZMM3I65JS3OPKD5'
+os.environ['AWS_SECRET_ACCESS_KEY'] = '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'
+
+#Bucket
+s3 = boto3.client('s3')
+bucket_name = 'globantdb-backup'
+departments= 'avro/departments-schema.avsc'
+jobs = 'avro/jobs-schema.avsc'
+hired = 'avro/hired_employees_schema.avsc'
+
+
 # Schemas
-departments_schema = avro.schema.parse(open("departments-schema.avsc", "rb").read())
+obj = s3.get_object(Bucket=bucket_name, Key=departments)
+departments_schema = avro.schema.parse(open(obj['Body'].read(), "rb").read())
 
-jobs_schema = avro.schema.parse(open("jobs-schema.avsc", "rb").read())
+obj = s3.get_object(Bucket=bucket_name, Key=jobs)
+jobs_schema = avro.schema.parse(open(obj['Body'].read(), "rb").read())
 
-hired_employees_schema = avro.schema.parse(open("hired_employees_schema.avsc", "rb").read())
+obj = s3.get_object(Bucket=bucket_name, Key=hired)
+hired_employees_schema = avro.schema.parse(open(obj['Body'].read(), "rb").read())
 
 conn = psycopg2.connect(**conn_info)
 cur = conn.cursor()
