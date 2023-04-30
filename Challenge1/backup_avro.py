@@ -22,20 +22,21 @@ os.environ['AWS_SECRET_ACCESS_KEY'] = 'UxMq5tMDshA4Zd6NkpLKW/9z08qstIAx2BzUJL8T'
 #Bucket
 s3 = boto3.client('s3')
 bucket_name = 'globantdb-backup'
-departments= 'avro/departments-schema.avsc'
-jobs = 'avro/jobs-schema.avsc'
-hired = 'avro/hired_employees_schema.avsc'
+departments= 'avro_schema/departments-schema.avsc'
+jobs = 'avro_schema/jobs-schema.avsc'
+hired = 'avro_schema/hired_employees_schema.avsc'
+prefix = 'backup/'
 
 
 # Schemas
 obj = s3.get_object(Bucket=bucket_name, Key=departments)
-departments_schema = avro.schema.parse(open(obj['Body'].read(), "rb").read())
+departments_schema = avro.schema.parse(obj['Body'].read())
 
 obj = s3.get_object(Bucket=bucket_name, Key=jobs)
-jobs_schema = avro.schema.parse(open(obj['Body'].read(), "rb").read())
+jobs_schema = avro.schema.parse(obj['Body'].read())
 
 obj = s3.get_object(Bucket=bucket_name, Key=hired)
-hired_employees_schema = avro.schema.parse(open(obj['Body'].read(), "rb").read())
+hired_employees_schema = avro.schema.parse(obj['Body'].read())
 
 conn = psycopg2.connect(**conn_info)
 cur = conn.cursor()
@@ -71,7 +72,7 @@ with open("hired_employees.avro", "wb") as f:
 cur.close()
 conn.close()
 
-# Read AVRO
+# Read & upload AVRO
 with open("departments.avro", "rb") as f:
     reader = DataFileReader(f, DatumReader())
     for row in reader:
@@ -89,3 +90,12 @@ with open("hired_employees.avro", "rb") as f:
     for row in reader:
         print(row)
     reader.close()
+
+with open("departments.avro", "rb") as f:
+    s3.upload_fileobj(f, bucket_name, prefix + 'departments.avro')
+
+with open("jobs.avro", "rb") as f:
+    s3.upload_fileobj(f, bucket_name, prefix + 'jobs.avro')
+
+with open("hired_employees.avro", "rb") as f:
+    s3.upload_fileobj(f, bucket_name, prefix + 'hired_employees.avro')
