@@ -88,7 +88,7 @@ def create_employees():
     return jsonify({'success': True}), 201
 
 @app.route('/departments', methods=['POST']) #Insert departments
-def create_departments():
+def create_deparments():
     data = request.json
     departments = data.get('departments')
 
@@ -96,21 +96,14 @@ def create_departments():
         return jsonify({'error': 'No departments provided'}), 400
     
     for department in departments:
-        id = department.get('id')
         department = department.get('department')
-        table_name = department.get('table')
 
-        if not all([id, department]):
-            return jsonify({'error': 'Missing data for department'}), 400
+        if not all([department]):
+            return jsonify({'error': 'Missing data for job'}), 400
 
-        if table_name == 'Departments':
-            table = Departments
+        table = Departments
 
-        else:
-            return jsonify({'error': f'Invalid table name: {table_name}'}), 400
-        
-
-        department = table(id=id, department=department)
+        department = table(department=department)
         db.session.add(department)
 
     db.session.commit()
@@ -125,21 +118,14 @@ def create_jobs():
         return jsonify({'error': 'No jobs provided'}), 400
     
     for job in jobs:
-        id = job.get('id')
         job = job.get('job')
-        table_name = job.get('table')
 
-        if not all([id, job]):
+        if not all([job]):
             return jsonify({'error': 'Missing data for job'}), 400
 
-        
-        if table_name == 'Jobs':
-            table = Jobs
+        table = Jobs
 
-        else:
-            return jsonify({'error': f'Invalid table name: {table_name}'}), 400
-
-        job = table(id=id, job=job)
+        job = table(job=job)
         db.session.add(job)
 
     db.session.commit()
